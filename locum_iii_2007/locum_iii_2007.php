@@ -49,7 +49,7 @@ class locum_iii_2007 {
    */
   public function scrape_bib($bnum, $skip_cover = FALSE) {
 
-    $iii_server_info = self::iii_server_info();
+    $iii_server_info = $this->iii_server_info();
 
     $bnum = trim($bnum);
 
@@ -69,14 +69,14 @@ class locum_iii_2007 {
 
     $bib_info_record = $xrecord->RECORDINFO;
     $bib_info_local = $xrecord->TYPEINFO->BIBLIOGRAPHIC->FIXFLD;
-    $bib_info_marc = self::parse_marc_subfields($xrecord->VARFLD);
+    $bib_info_marc = $this->parse_marc_subfields($xrecord->VARFLD);
     unset($xrecord);
 
     // Process record information
     $bib['bnum'] = $bnum;
-    $bib['bib_created'] = self::fixdate($bib_info_record->CREATEDATE);
-    $bib['bib_lastupdate'] = self::fixdate($bib_info_record->LASTUPDATEDATE);
-    $bib['bib_prevupdate'] = self::fixdate($bib_info_record->PREVUPDATEDATE);
+    $bib['bib_created'] = $this->fixdate($bib_info_record->CREATEDATE);
+    $bib['bib_lastupdate'] = $this->fixdate($bib_info_record->LASTUPDATEDATE);
+    $bib['bib_prevupdate'] = $this->fixdate($bib_info_record->PREVUPDATEDATE);
     $bib['bib_revs'] = (int) $bib_info_record->REVISIONS;
 
     // Process local record data
@@ -102,25 +102,25 @@ class locum_iii_2007 {
 
     // Process Author information
     $bib['author'] = '';
-    $author_arr = self::prepare_marc_values($bib_info_marc['100'], array('a','b','c','d'));
+    $author_arr = $this->prepare_marc_values($bib_info_marc['100'], array('a','b','c','d'));
     $bib['author'] = $author_arr[0];
 
     // In no author info, we'll go for the 110 field
     if (!$bib['author']) {
-      $author_110 = self::prepare_marc_values($bib_info_marc['110'], array('a'));
+      $author_110 = $this->prepare_marc_values($bib_info_marc['110'], array('a'));
       $bib['author'] = $author_110[0];
     }
 
     // Additional author information
     $bib['addl_author'] = '';
-    $addl_author = self::prepare_marc_values($bib_info_marc['700'], array('a','b','c','d'));
+    $addl_author = $this->prepare_marc_values($bib_info_marc['700'], array('a','b','c','d'));
     if (is_array($addl_author)) {
       $bib['addl_author'] = serialize($addl_author);
     }
 
     // In no additional author info, we'll go for the 710 field
     if (!$bib['addl_author']) {
-      $author_710 = self::prepare_marc_values($bib_info_marc['710'], array('a'));
+      $author_710 = $this->prepare_marc_values($bib_info_marc['710'], array('a'));
       if (is_array($author_710)) {
         $bib['addl_author'] = serialize($author_710);
       }
@@ -128,13 +128,13 @@ class locum_iii_2007 {
 
     // Title information
     $bib['title'] = '';
-    $title = self::prepare_marc_values($bib_info_marc['245'], array('a','b'));
+    $title = $this->prepare_marc_values($bib_info_marc['245'], array('a','b'));
     if (substr($title[0], -1) == '/') { $title[0] = trim(substr($title[0], 0, -1)); }
     $bib['title'] = trim($title[0]);
 
     // Title medium information
     $bib['title_medium'] = '';
-    $title_medium = self::prepare_marc_values($bib_info_marc['245'], array('h'));
+    $title_medium = $this->prepare_marc_values($bib_info_marc['245'], array('h'));
     if ($title_medium[0]) {
       if (preg_match('/\[(.*?)\]/', $title_medium[0], $medium_match)) {
         $bib['title_medium'] = $medium_match[1];
@@ -143,24 +143,24 @@ class locum_iii_2007 {
     
     // Edition information
     $bib['edition'] = '';
-    $edition = self::prepare_marc_values($bib_info_marc['250'], array('a'));
+    $edition = $this->prepare_marc_values($bib_info_marc['250'], array('a'));
     $bib['edition'] = trim($edition[0]);
 
     // Series information
     $bib['series'] = '';
-    $series = self::prepare_marc_values($bib_info_marc['490'], array('a','v'));
-    if (!$series[0]) { $series = self::prepare_marc_values($bib_info_marc['440'], array('a','v')); }
-    if (!$series[0]) { $series = self::prepare_marc_values($bib_info_marc['400'], array('a','v')); }
-    if (!$series[0]) { $series = self::prepare_marc_values($bib_info_marc['410'], array('a','v')); }
-    if (!$series[0]) { $series = self::prepare_marc_values($bib_info_marc['730'], array('a','v')); }
-    if (!$series[0]) { $series = self::prepare_marc_values($bib_info_marc['800'], array('a','v')); }
-    if (!$series[0]) { $series = self::prepare_marc_values($bib_info_marc['810'], array('a','v')); }
-    if (!$series[0]) { $series = self::prepare_marc_values($bib_info_marc['830'], array('a','v')); }
+    $series = $this->prepare_marc_values($bib_info_marc['490'], array('a','v'));
+    if (!$series[0]) { $series = $this->prepare_marc_values($bib_info_marc['440'], array('a','v')); }
+    if (!$series[0]) { $series = $this->prepare_marc_values($bib_info_marc['400'], array('a','v')); }
+    if (!$series[0]) { $series = $this->prepare_marc_values($bib_info_marc['410'], array('a','v')); }
+    if (!$series[0]) { $series = $this->prepare_marc_values($bib_info_marc['730'], array('a','v')); }
+    if (!$series[0]) { $series = $this->prepare_marc_values($bib_info_marc['800'], array('a','v')); }
+    if (!$series[0]) { $series = $this->prepare_marc_values($bib_info_marc['810'], array('a','v')); }
+    if (!$series[0]) { $series = $this->prepare_marc_values($bib_info_marc['830'], array('a','v')); }
     $bib['series'] = $series[0];
 
     // Call number
     $callnum = '';
-    $callnum_arr = self::prepare_marc_values($bib_info_marc['099'], array('a'));
+    $callnum_arr = $this->prepare_marc_values($bib_info_marc['099'], array('a'));
     if (is_array($callnum_arr) && count($callnum_arr)) {
       foreach ($callnum_arr as $cn_sub) {
         $callnum .= $cn_sub . ' ';
@@ -170,24 +170,24 @@ class locum_iii_2007 {
   
     // Publication information
     $bib['pub_info'] = '';
-    $pub_info = self::prepare_marc_values($bib_info_marc['260'], array('a','b','c'));
+    $pub_info = $this->prepare_marc_values($bib_info_marc['260'], array('a','b','c'));
     $bib['pub_info'] = $pub_info[0];
 
     // Publication year
     $bib['pub_year'] = '';
-    $pub_year = self::prepare_marc_values($bib_info_marc['260'], array('c'));
+    $pub_year = $this->prepare_marc_values($bib_info_marc['260'], array('c'));
     $c_arr = explode(',', $pub_year[0]);
     $c_key = count($c_arr) - 1;
     $bib['pub_year'] = substr(ereg_replace("[^0-9]", '', $c_arr[$c_key]), -4);
 
     // ISBN / Std. number
     $bib['stdnum'] = '';
-    $stdnum = self::prepare_marc_values($bib_info_marc['020'], array('a'));
+    $stdnum = $this->prepare_marc_values($bib_info_marc['020'], array('a'));
     $bib['stdnum'] = $stdnum[0];
     
     // UPC
     $bib['upc'] = '';
-    $upc = self::prepare_marc_values($bib_info_marc['024'], array('a'));
+    $upc = $this->prepare_marc_values($bib_info_marc['024'], array('a'));
     $bib['upc'] = $upc[0];
     if($bib['upc'] == '') { $bib['upc'] = "000000000000"; }
 
@@ -199,17 +199,17 @@ class locum_iii_2007 {
 
     // LCCN
     $bib['lccn'] = '';
-    $lccn = self::prepare_marc_values($bib_info_marc['010'], array('a'));
+    $lccn = $this->prepare_marc_values($bib_info_marc['010'], array('a'));
     $bib['lccn'] = $lccn[0];
     
     // Download Link (if it's a downloadable)
     $bib['download_link'] = '';
-    $dl_link = self::prepare_marc_values($bib_info_marc['856'], array('u'));
+    $dl_link = $this->prepare_marc_values($bib_info_marc['856'], array('u'));
     $bib['download_link'] = $dl_link[0];
 
     // Description
     $bib['descr'] = '';
-    $descr = self::prepare_marc_values($bib_info_marc['300'], array('a','b','c'));
+    $descr = $this->prepare_marc_values($bib_info_marc['300'], array('a','b','c'));
     $bib['descr'] = $descr[0];
 
     // Notes
@@ -217,7 +217,7 @@ class locum_iii_2007 {
     $bib['notes'] = '';
     $notes_tags = array('500','505','511','520');
     foreach ($notes_tags as $notes_tag) {
-      $notes_arr = self::prepare_marc_values($bib_info_marc[$notes_tag], array('a'));
+      $notes_arr = $this->prepare_marc_values($bib_info_marc[$notes_tag], array('a'));
       if (is_array($notes_arr)) {
         foreach ($notes_arr as $notes_arr_val) {
           array_push($notes, $notes_arr_val);
@@ -235,7 +235,7 @@ class locum_iii_2007 {
       '696', '697', '698', '699'
     );
     foreach ($subj_tags as $subj_tag) {
-      $subj_arr = self::prepare_marc_values($bib_info_marc[$subj_tag], array('a','b','c','d','e','v','x','y','z'), ' -- ');
+      $subj_arr = $this->prepare_marc_values($bib_info_marc[$subj_tag], array('a','b','c','d','e','v','x','y','z'), ' -- ');
       if (is_array($subj_arr)) {
         foreach ($subj_arr as $subj_arr_val) {
           array_push($subjects, $subj_arr_val);
@@ -257,7 +257,7 @@ class locum_iii_2007 {
    */
   public function item_status($bnum) {
     
-    $iii_server_info = self::iii_server_info();
+    $iii_server_info = $this->iii_server_info();
     $avail_token = locum::csv_parser($this->locum_config['ils_custom_config']['iii_available_token']);
     $default_age = $this->locum_config['iii_custom_config']['default_age'];
     $default_branch = $this->locum_config['iii_custom_config']['default_branch'];
@@ -360,7 +360,7 @@ class locum_iii_2007 {
    */
   public function patron_info($pid) {
     $papi = new iii_patronapi;
-    $iii_server_info = self::iii_server_info();
+    $iii_server_info = $this->iii_server_info();
     $papi->iiiserver = $iii_server_info['server'];
     $papi_data = $papi->get_patronapi_data($pid);
 
@@ -371,7 +371,7 @@ class locum_iii_2007 {
     $pdata['checkouts'] = $papi_data['CURCHKOUT'];
     $pdata['homelib'] = $papi_data['HOMELIBR'];
     $pdata['balance'] = preg_replace('/[^0-9.]/', '', $papi_data['MONEYOWED']);
-    $pdata['expires'] = $papi_data['EXPDATE'] ? self::date_to_timestamp($papi_data['EXPDATE'], 2000) : NULL;
+    $pdata['expires'] = $papi_data['EXPDATE'] ? $this->date_to_timestamp($papi_data['EXPDATE'], 2000) : NULL;
     $pdata['name'] = $papi_data['PATRNNAME'];
     $pdata['address'] = preg_replace('%\$%s', "\n", $papi_data['ADDRESS']);
     $pdata['tel1'] = $papi_data['TELEPHONE'];
@@ -409,7 +409,7 @@ class locum_iii_2007 {
     foreach ($result as $item) {
       $hist_result[$i]['varname'] = $item['varname'];
       $hist_result[$i]['bnum'] = $item['bnum'];
-      $hist_result[$i]['date'] = self::date_to_timestamp($item['date']);
+      $hist_result[$i]['date'] = $this->date_to_timestamp($item['date']);
       $i++;
     }
     return $hist_result;
@@ -625,7 +625,7 @@ class locum_iii_2007 {
    * @param string Date string in YYYY-MM-DD format
    */
   public function fixdate($olddate) {
-    return date('Y-m-d', self::date_to_timestamp($olddate));
+    return date('Y-m-d', $this->date_to_timestamp($olddate));
   }
   
   /**
@@ -657,7 +657,7 @@ class locum_iii_2007 {
   private function get_tools($cardnum, $pin) {
     require_once('iiitools_2007.php');
     $iii = new iiitools;
-    $iii->set_iiiserver(self::iii_server_info());
+    $iii->set_iiiserver($this->iii_server_info());
     $iii->set_cardnum($cardnum);
     $iii->set_pin($pin);
     return $iii;
